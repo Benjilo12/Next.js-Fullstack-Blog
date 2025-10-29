@@ -1,3 +1,4 @@
+// app/api/webhooks/route.js
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 
 export async function POST(req) {
@@ -13,11 +14,14 @@ export async function POST(req) {
     );
     console.log("Webhook payload:", evt.data);
 
+    // Narrow to specific events for type inference
     if (evt.type === "user.created") {
       console.log("userId:", evt.data.id);
+      // Add your user creation logic here
     }
     if (evt.type === "user.updated") {
       console.log("user is updated:", evt.data.id);
+      // Add your user update logic here
     }
 
     return new Response("Webhook received", { status: 200 });
