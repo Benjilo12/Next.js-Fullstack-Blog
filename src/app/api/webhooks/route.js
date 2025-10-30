@@ -2,9 +2,9 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
+import { clerkClient } from "@clerk/nextjs/dist/types/server";
 
 // Import clerkClient properly
-import { clerkClient } from "@clerk/nextjs";
 
 export async function POST(req) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
