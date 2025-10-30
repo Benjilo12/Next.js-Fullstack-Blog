@@ -14,26 +14,20 @@ export async function POST(req) {
 
   try {
     // Get headers properly
-    const headerList = await headers(); // Add await
+    const headerList = await headers();
     const svix_id = headerList.get("svix-id");
     const svix_timestamp = headerList.get("svix-timestamp");
     const svix_signature = headerList.get("svix-signature");
 
-    console.log("📨 Webhook headers:", {
-      svix_id,
-      svix_timestamp,
-      svix_signature,
-    });
+    console.log("📨 Webhook headers received");
 
     if (!svix_id || !svix_timestamp || !svix_signature) {
       console.error("❌ Missing Svix headers");
       return new Response("Missing Svix headers", { status: 400 });
     }
 
-    // Get the raw body text instead of parsing as JSON first
-    const body = await req.text(); // Use text() instead of json()
-
-    console.log("📝 Raw webhook body:", body);
+    // Get the raw body text
+    const body = await req.text();
 
     // Verify webhook
     const wh = new Webhook(WEBHOOK_SECRET);
@@ -52,14 +46,13 @@ export async function POST(req) {
       });
     }
 
-    // Now parse the verified event data
     const eventType = evt.type;
     const data = evt.data;
 
     console.log(`✅ Webhook verified: ${eventType}`);
     console.log("📊 Event data:", JSON.stringify(data, null, 2));
 
-    // Handle events
+    // Handle events - FIXED: Pass individual parameters instead of object
     if (eventType === "user.created" || eventType === "user.updated") {
       const {
         id,
@@ -70,29 +63,44 @@ export async function POST(req) {
         username,
       } = data;
 
+      // Safely extract email with proper fallback
       const email = email_addresses?.[0]?.email_address || "";
 
-      const user = await createOrUpdateUser({
-        clerkId: id,
+      console.log(`🔄 Processing user ${eventType}:`, {
+        id,
         email,
-        firstName: first_name || "",
-        lastName: last_name || "",
-        username: username || "",
-        profilePicture: image_url || "",
+        first_name,
+        last_name,
+        username,
       });
+
+      // FIX: Call function with individual parameters
+      const user = await createOrUpdateUser(
+        id, // clerkId
+        first_name || "", // first_name
+        last_name || "", // last_name
+        image_url || "", // image_url
+        email_addresses, // email_addresses array
+        username || "" // username
+      );
+
+      console.log("✅ User saved to database:", user?._id);
 
       // Update Clerk metadata if user was created
       if (user && eventType === "user.created") {
         try {
           await clerkClient.users.updateUserMetadata(id, {
             publicMetadata: {
-              userMongoId: user._id?.toString() || user.id,
+              userMongoId: user._id?.toString(),
               isAdmin: user.isAdmin || false,
             },
           });
           console.log("✅ Clerk metadata updated for user:", id);
         } catch (metadataError) {
-          console.error("❌ Failed to update Clerk metadata:", metadataError);
+          console.error(
+            "❌ Failed to update Clerk metadata:",
+            metadataError.message
+          );
         }
       }
     }
