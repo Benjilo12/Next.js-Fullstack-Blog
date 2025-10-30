@@ -2,9 +2,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
-import { clerkClient } from "@clerk/nextjs/dist/types/server";
-
-// Import clerkClient properly
+import { clerkClient } from "@clerk/nextjs/server"; // ✅ FIXED: Correct import
 
 export async function POST(req) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -91,12 +89,9 @@ export async function POST(req) {
       // Update Clerk metadata if user was created
       if (user && eventType === "user.created") {
         try {
-          // Ensure clerkClient is available
-          if (!clerkClient) {
-            throw new Error("clerkClient is not initialized");
-          }
+          const client = await clerkClient(); // ✅ FIXED: Call clerkClient as a function
 
-          await clerkClient.users.updateUserMetadata(id, {
+          await client.users.updateUserMetadata(id, {
             publicMetadata: {
               userMongoId: user._id?.toString(),
               isAdmin: user.isAdmin || false,
