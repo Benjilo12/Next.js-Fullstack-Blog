@@ -52,10 +52,9 @@ export function Header() {
     <div className="relative w-full">
       <Navbar
         className="
-          fixed top-0 left-0 w-full z-50 
-          bg-transparent backdrop-blur-lg dark:bg-black/20
-          border-b border-white/20 dark:border-neutral-800
-          shadow-sm transition-all duration-300 py-3
+          fixed top-0 left-0 w-full z-50 outline-none
+           backdrop-blur-lg dark:bg-black
+          shadow-sm transition-all duration-300 py-0
         "
       >
         {/* Desktop Navigation */}
@@ -105,7 +104,7 @@ export function Header() {
         </NavBody>
 
         {/* Mobile Navigation */}
-        <MobileNav>
+        <MobileNav className="z-50">
           <MobileNavHeader>
             <NavbarLogo />
             <MobileNavToggle
@@ -117,13 +116,15 @@ export function Header() {
           <MobileNavMenu
             isOpen={isMobileMenuOpen}
             onClose={() => setIsMobileMenuOpen(false)}
+            className="  backdrop-blur-lg dark:bg-black
+          shadow-sm transition-all duration-300 py-0"
           >
             {navItems.map((item, idx) => (
               <Link
                 key={`mobile-link-${idx}`}
                 href={item.link}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`relative px-4 py-2 rounded-md  font-medium transition ${getLinkClasses(
+                className={`relative  text-neutral-600 dark:text-neutral-300 px-4 py-2 rounded-md text-sm font-medium transition ${getLinkClasses(
                   item.link
                 )}`}
               >
@@ -131,12 +132,12 @@ export function Header() {
               </Link>
             ))}
 
-            <div className="flex w-full flex-col gap-4 mt-4">
-              <ModeToggle className="ml-10" />
+            <div className="flex w-full flex-col gap-4 mt-4 pl-6.5">
+              <ModeToggle className="" />
 
               {/* Mobile Clerk buttons */}
               <SignedIn className="w-full flex justify-center dark:bg-white text-black">
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-2 mb-2 pr-59">
                   <UserButton
                     appearance={{
                       baseTheme: [light, dark],

@@ -128,3 +128,77 @@
 body {
   font-family: var(--font-jakarta);
 }
+
+/* Dark mode styles for React Quill */
+.ql-toolbar.ql-snow {
+  border: 1px solid #d1d5db !important;
+  background: white !important;
+}
+
+.dark .ql-toolbar.ql-snow {
+  border: 1px solid #4b5563 !important;
+  background: #374151 !important;
+}
+
+.ql-container.ql-snow {
+  border: 1px solid #d1d5db !important;
+  background: white !important;
+}
+
+.dark .ql-container.ql-snow {
+  border: 1px solid #4b5563 !important;
+  background: #374151 !important;
+  color: white !important;
+}
+
+.ql-editor {
+  color: #1f2937 !important;
+}
+
+.dark .ql-editor {
+  color: white !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #9ca3af !important;
+}
+
+.dark .ql-editor.ql-blank::before {
+  color: #6b7280 !important;
+}
+
+/* Toolbar buttons */
+.ql-snow .ql-stroke {
+  stroke: #4b5563 !important;
+}
+
+.dark .ql-snow .ql-stroke {
+  stroke: #d1d5db !important;
+}
+
+.ql-snow .ql-fill {
+  fill: #4b5563 !important;
+}
+
+.dark .ql-snow .ql-fill {
+  fill: #d1d5db !important;
+}
+
+.ql-snow .ql-picker-label {
+  color: #4b5563 !important;
+}
+
+.dark .ql-snow .ql-picker-label {
+  color: #d1d5db !important;
+}
+
+.ql-snow .ql-picker-options {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.dark .ql-snow .ql-picker-options {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: white !important;
+}
