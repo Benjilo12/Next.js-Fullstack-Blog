@@ -6,19 +6,18 @@ export const connect = async () => {
   mongoose.set("strictQuery", true);
 
   if (initialized) {
-    console.log("MongoDB is already initialized");
+    console.log("✅ MongoDB already initialized");
     return;
   }
-};
 
-try {
-  await mongoose.connect(process.env.MONGODB_URI, {
-    dbName: "nextblog",
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  initialized = true;
-  console.log("MongoDB connected");
-} catch (error) {
-  console.log("Error connecting to MongoDB");
-}
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: "nextblog",
+    });
+
+    initialized = true;
+    console.log("✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("❌ Error connecting to MongoDB:", error);
+  }
+};
