@@ -66,7 +66,7 @@ export function Header() {
               <Link
                 key={`nav-link-${idx}`}
                 href={item.link}
-                className={`px-4 py-2 rounded-md text-[16px] font-medium transition ${getLinkClasses(
+                className={`px-4 py-2 rounded-md text-[14px]  font-medium transition ${getLinkClasses(
                   item.link
                 )}`}
               >
