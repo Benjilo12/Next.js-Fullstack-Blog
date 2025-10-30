@@ -1,9 +1,8 @@
 // app/api/webhooks/route.js
 import { clerkClient } from "@clerk/nextjs/server";
 import { Webhook } from "svix";
-import { headers as nextHeaders } from "next/headers";
+import { headers } from "next/headers"; // ✅ no renaming here
 import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
-// ✅ adjust path
 
 export async function POST(req) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -14,8 +13,9 @@ export async function POST(req) {
     );
   }
 
-  // ✅ Get headers safely
-  const headerList = nextHeaders();
+  // ✅ headers() must be called inside POST
+  const headerList = headers();
+
   const svix_id = headerList.get("svix-id");
   const svix_timestamp = headerList.get("svix-timestamp");
   const svix_signature = headerList.get("svix-signature");
@@ -24,14 +24,13 @@ export async function POST(req) {
     return new Response("❌ Missing Svix headers", { status: 400 });
   }
 
-  // ✅ Get and stringify the body
+  // ✅ Parse the body
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
-  // ✅ Verify webhook using Svix
+  // ✅ Verify webhook
   const wh = new Webhook(WEBHOOK_SECRET);
   let evt;
-
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
@@ -43,7 +42,7 @@ export async function POST(req) {
     return new Response("Error verifying webhook", { status: 400 });
   }
 
-  // ✅ Webhook event data
+  // ✅ Extract event info
   const eventType = evt.type;
   const data = evt.data;
 
@@ -51,7 +50,7 @@ export async function POST(req) {
   console.log("Payload:", data);
 
   try {
-    // 🧩 Handle Clerk events
+    // Handle user.created / user.updated
     if (eventType === "user.created" || eventType === "user.updated") {
       const {
         id,
@@ -83,9 +82,9 @@ export async function POST(req) {
       }
     }
 
+    // Handle user.deleted
     if (eventType === "user.deleted") {
-      const { id } = data;
-      await deleteUser(id);
+      await deleteUser(data.id);
     }
 
     return new Response("✅ Webhook received successfully", { status: 200 });
