@@ -1,8 +1,10 @@
 // app/api/webhooks/route.js
-import { clerkClient } from "@clerk/nextjs/server";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
+
+// Import clerkClient properly
+import { clerkClient } from "@clerk/nextjs/server";
 
 export async function POST(req) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -52,7 +54,7 @@ export async function POST(req) {
     console.log(`✅ Webhook verified: ${eventType}`);
     console.log("📊 Event data:", JSON.stringify(data, null, 2));
 
-    // Handle events - FIXED: Pass individual parameters instead of object
+    // Handle events
     if (eventType === "user.created" || eventType === "user.updated") {
       const {
         id,
@@ -74,14 +76,14 @@ export async function POST(req) {
         username,
       });
 
-      // FIX: Call function with individual parameters
+      // Create or update user in database
       const user = await createOrUpdateUser(
-        id, // clerkId
-        first_name || "", // first_name
-        last_name || "", // last_name
-        image_url || "", // image_url
-        email_addresses, // email_addresses array
-        username || "" // username
+        id,
+        first_name || "",
+        last_name || "",
+        image_url || "",
+        email_addresses,
+        username || ""
       );
 
       console.log("✅ User saved to database:", user?._id);
@@ -89,6 +91,11 @@ export async function POST(req) {
       // Update Clerk metadata if user was created
       if (user && eventType === "user.created") {
         try {
+          // Ensure clerkClient is available
+          if (!clerkClient) {
+            throw new Error("clerkClient is not initialized");
+          }
+
           await clerkClient.users.updateUserMetadata(id, {
             publicMetadata: {
               userMongoId: user._id?.toString(),
@@ -101,6 +108,7 @@ export async function POST(req) {
             "❌ Failed to update Clerk metadata:",
             metadataError.message
           );
+          // Don't throw the error - just log it and continue
         }
       }
     }
