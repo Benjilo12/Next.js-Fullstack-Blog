@@ -1,96 +1,104 @@
-import User from "../models/user.model";
-import { connect } from "../mongodb/mongoose";
+import { Webhook } from "svix";
+import { headers } from "next/headers";
+import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
+import { clerkClient } from "@clerk/nextjs/server";
 
-export const createOrUpdateUser = async (
-  id,
-  first_name,
-  last_name,
-  image_url,
-  email_addresses,
-  username
-) => {
+export async function POST(req) {
+  // You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
+  const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+
+  if (!WEBHOOK_SECRET) {
+    throw new Error(
+      "Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local"
+    );
+  }
+
+  // Get the headers
+  const headerPayload = headers();
+  const svix_id = headerPayload.get("svix-id");
+  const svix_timestamp = headerPayload.get("svix-timestamp");
+  const svix_signature = headerPayload.get("svix-signature");
+
+  // If there are no headers, error out
+  if (!svix_id || !svix_timestamp || !svix_signature) {
+    return new Response("Error occured -- no svix headers", {
+      status: 400,
+    });
+  }
+
+  // Get the body
+  const payload = await req.json();
+  const body = JSON.stringify(payload);
+
+  // Create a new Svix instance with your secret.
+  const wh = new Webhook(WEBHOOK_SECRET);
+
+  let evt;
+
+  // Verify the payload with the headers
   try {
-    console.log("🔗 Connecting to MongoDB...");
-    await connect();
+    evt = wh.verify(body, {
+      "svix-id": svix_id,
+      "svix-timestamp": svix_timestamp,
+      "svix-signature": svix_signature,
+    });
+  } catch (err) {
+    console.error("Error verifying webhook:", err);
+    return new Response("Error occured", {
+      status: 400,
+    });
+  }
 
-    // Check if connection is ready
-    if (mongoose.connection.readyState !== 1) {
-      throw new Error("MongoDB connection not ready");
-    }
+  // Do something with the payload
+  // For this guide, you simply log the payload to the console
+  const { id } = evt?.data;
+  const eventType = evt?.type;
+  console.log(`Webhook with and ID of ${id} and type of ${eventType}`);
+  console.log("Webhook body:", body);
 
-    const email = email_addresses?.[0]?.email_address || "";
-
-    console.log("📝 Creating/updating user:", { clerkId: id, email });
-
-    // Add timeout to the database operation
-    const user = await User.findOneAndUpdate(
-      { clerkId: id },
-      {
-        $set: {
-          firstName: first_name || "",
-          lastName: last_name || "",
-          profilePicture: image_url || "",
-          email: email_addresses?.[0]?.email_address || "",
-          username: username || "",
-          updatedAt: new Date(),
-        },
-        $setOnInsert: {
-          createdAt: new Date(),
-        },
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: false, // Disable validators for performance
-        maxTimeMS: 30000, // 30 second timeout for the operation
+  if (eventType === "user.created" || eventType === "user.updated") {
+    const { id, first_name, last_name, image_url, email_addresses, username } =
+      evt?.data;
+    try {
+      const user = await createOrUpdateUser(
+        id,
+        first_name,
+        last_name,
+        image_url,
+        email_addresses,
+        username
+      );
+      if (user && eventType === "user.created") {
+        try {
+          await clerkClient.users.updateUserMetadata(id, {
+            publicMetadata: {
+              userMongoId: user._id,
+              isAdmin: user.isAdmin,
+            },
+          });
+        } catch (error) {
+          console.log("Error updating user metadata:", error);
+        }
       }
-    );
-
-    console.log("✅ User saved successfully:", user?._id);
-    return user;
-  } catch (error) {
-    console.error("❌ Error in createOrUpdateUser:", error.message);
-
-    // Check if it's a connection error and reset connection state
-    if (error.name === "MongooseError" || error.message.includes("buffering")) {
-      // Reset connection state to force reconnection
-      isConnected = false;
-      connectionPromise = null;
+    } catch (error) {
+      console.log("Error creating or updating user:", error);
+      return new Response("Error occured", {
+        status: 400,
+      });
     }
-
-    throw error;
   }
-};
 
-export const deleteUser = async (id) => {
-  try {
-    console.log("🗑️ Deleting user:", id);
-    await connect();
-
-    if (mongoose.connection.readyState !== 1) {
-      throw new Error("MongoDB connection not ready");
+  if (eventType === "user.deleted") {
+    const { id } = evt?.data;
+    try {
+      await deleteUser(id);
+    } catch (error) {
+      console.log("Error deleting user:", error);
+      return new Response("Error occured", {
+        status: 400,
+      });
     }
-
-    const result = await User.findOneAndDelete(
-      { clerkId: id },
-      { maxTimeMS: 30000 }
-    );
-
-    if (result) {
-      console.log("✅ User deleted successfully:", id);
-    } else {
-      console.log("⚠️ User not found for deletion:", id);
-    }
-
-    return result;
-  } catch (error) {
-    console.error("❌ Error deleting user:", error.message);
-
-    if (error.name === "MongooseError" || error.message.includes("buffering")) {
-      isConnected = false;
-      connectionPromise = null;
-    }
-
-    throw error;
   }
-};
+
+  return new Response("", { status: 200 });
+}
