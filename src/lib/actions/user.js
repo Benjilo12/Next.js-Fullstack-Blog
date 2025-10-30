@@ -1,4 +1,3 @@
-// lib/actions/user.js
 import User from "../models/user.model";
 import { connect } from "../mongodb/mongoose";
 
@@ -14,20 +13,16 @@ export const createOrUpdateUser = async (
     console.log("🔗 Connecting to MongoDB...");
     await connect();
 
-    // Safely extract email with multiple fallbacks
-    const email =
-      email_addresses?.[0]?.email_address ||
-      email_addresses?.[0]?.emailAddress ||
-      "";
+    // Check if connection is ready
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("MongoDB connection not ready");
+    }
 
-    console.log("📝 Creating/updating user:", {
-      clerkId: id,
-      email,
-      first_name,
-      last_name,
-      username,
-    });
+    const email = email_addresses?.[0]?.email_address || "";
 
+    console.log("📝 Creating/updating user:", { clerkId: id, email });
+
+    // Add timeout to the database operation
     const user = await User.findOneAndUpdate(
       { clerkId: id },
       {
@@ -46,7 +41,8 @@ export const createOrUpdateUser = async (
       {
         new: true,
         upsert: true,
-        runValidators: true,
+        runValidators: false, // Disable validators for performance
+        maxTimeMS: 30000, // 30 second timeout for the operation
       }
     );
 
@@ -54,8 +50,15 @@ export const createOrUpdateUser = async (
     return user;
   } catch (error) {
     console.error("❌ Error in createOrUpdateUser:", error.message);
-    console.error("Full error:", error);
-    throw error; // Re-throw to handle in webhook
+
+    // Check if it's a connection error and reset connection state
+    if (error.name === "MongooseError" || error.message.includes("buffering")) {
+      // Reset connection state to force reconnection
+      isConnected = false;
+      connectionPromise = null;
+    }
+
+    throw error;
   }
 };
 
@@ -63,7 +66,15 @@ export const deleteUser = async (id) => {
   try {
     console.log("🗑️ Deleting user:", id);
     await connect();
-    const result = await User.findOneAndDelete({ clerkId: id });
+
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("MongoDB connection not ready");
+    }
+
+    const result = await User.findOneAndDelete(
+      { clerkId: id },
+      { maxTimeMS: 30000 }
+    );
 
     if (result) {
       console.log("✅ User deleted successfully:", id);
@@ -74,6 +85,12 @@ export const deleteUser = async (id) => {
     return result;
   } catch (error) {
     console.error("❌ Error deleting user:", error.message);
+
+    if (error.name === "MongooseError" || error.message.includes("buffering")) {
+      isConnected = false;
+      connectionPromise = null;
+    }
+
     throw error;
   }
 };
