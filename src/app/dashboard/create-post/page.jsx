@@ -2,6 +2,8 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,16 +14,78 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileUpload } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-
 import dynamic from "next/dynamic";
+
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
+import Image from "next/image";
 
 function CreatePostPage() {
   const { user, isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
+  const [content, setContent] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  // In your CreatePostPage component
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(e.target);
+
+    // Add content from ReactQuill
+    formData.set("content", content);
+    formData.set("category", selectedCategory);
+    formData.set("published", "true");
+
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Post created successfully:", result);
+
+        // Redirect to the new post
+        router.push(`/`);
+        router.refresh();
+      } else {
+        // Get the error text first to see what's coming back
+        const errorText = await response.text();
+        console.log("Raw error response:", errorText);
+
+        try {
+          const error = JSON.parse(errorText);
+          console.error("Failed to create post:", error);
+          alert(`Error: ${error.error || "Failed to create post"}`);
+        } catch (parseError) {
+          console.error("Failed to parse error response:", errorText);
+          alert(`Error: Server returned ${response.status} - ${errorText}`);
+        }
+      }
+    } catch (error) {
+      console.error("Network error creating post:", error);
+      alert("Network error creating post. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   if (!isLoaded) {
     return (
@@ -45,7 +109,10 @@ function CreatePostPage() {
             </p>
           </div>
 
-          <form className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-gray-900/30 p-4 sm:p-6 space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-gray-900/30 p-4 sm:p-6 space-y-6"
+          >
             {/* Title & Category Row - More Compact */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -57,6 +124,7 @@ function CreatePostPage() {
                 </Label>
                 <Input
                   type="text"
+                  name="title"
                   placeholder="Enter post title..."
                   required
                   id="title"
@@ -68,7 +136,10 @@ function CreatePostPage() {
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Category *
                 </Label>
-                <Select>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <SelectTrigger className="w-full p-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:border-teal-500 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-500 dark:focus:ring-teal-400 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -113,24 +184,95 @@ function CreatePostPage() {
               </div>
             </div>
 
+            {/* Tags Field */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="tags"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Tags
+              </Label>
+              <Input
+                type="text"
+                name="tags"
+                placeholder="Enter tags separated by commas (e.g., javascript, react, nextjs)"
+                id="tags"
+                className="w-full p-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:border-teal-500 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-500 dark:focus:ring-teal-400 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Separate multiple tags with commas
+              </p>
+            </div>
+
             {/* File Upload Section - More Compact */}
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Featured Image
               </Label>
               <div className="border-2 border-dashed border-teal-200 dark:border-teal-800 rounded-lg p-4 text-center bg-teal-50 dark:bg-teal-900/10 hover:bg-teal-100 dark:hover:bg-teal-900/20 transition-colors">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <FileUpload type="file" accept="image/*" />
+                <input
+                  type="file"
+                  name="featuredImage"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="featuredImage"
+                />
+
+                <div className="flex flex-col items-center gap-4">
+                  {imagePreview ? (
+                    <div className="relative">
+                      <Image
+                        src={imagePreview}
+                        width={100}
+                        height={100}
+                        alt="Preview"
+                        className="h-32 w-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePreview("");
+                          document.getElementById("featuredImage").value = "";
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 dark:text-gray-400">
+                      <svg
+                        className="w-12 h-12 mx-auto mb-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p className="text-sm">Click to upload featured image</p>
+                    </div>
+                  )}
+
                   <Button
                     type="button"
                     variant="outline"
+                    onClick={() =>
+                      document.getElementById("featuredImage").click()
+                    }
                     className="border border-teal-500 dark:border-teal-400 text-teal-600 dark:text-teal-300 hover:bg-teal-500 dark:hover:bg-teal-600 hover:text-white dark:hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
                   >
-                    Browse
+                    {imagePreview ? "Change Image" : "Browse"}
                   </Button>
                 </div>
+
                 <p className="text-gray-500 dark:text-gray-400 mt-2 text-xs">
-                  Upload featured image (JPEG, PNG, WebP)
+                  Upload featured image (JPEG, PNG, WebP) - Max 5MB
                 </p>
               </div>
             </div>
@@ -143,6 +285,8 @@ function CreatePostPage() {
               <div className="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
                 <ReactQuill
                   theme="snow"
+                  value={content}
+                  onChange={setContent}
                   placeholder="Write your content here..."
                   className="h-64 mb-10 dark:bg-gray-800 dark:text-white"
                   modules={{
@@ -168,9 +312,11 @@ function CreatePostPage() {
               </Label>
               <Input
                 type="text"
+                name="author"
                 placeholder="Author name..."
                 required
                 id="author"
+                defaultValue={user.fullName || ""}
                 className="w-full p-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:border-teal-500 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-500 dark:focus:ring-teal-400 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
@@ -179,9 +325,17 @@ function CreatePostPage() {
             <div className="flex justify-center pt-4">
               <Button
                 type="submit"
-                className="w-full sm:w-40 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-800 text-white font-semibold py-3 px-6 rounded-lg text-base shadow-md hover:shadow-lg transition-all"
+                disabled={loading || !content || !selectedCategory}
+                className="w-full sm:w-40 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg text-base shadow-md hover:shadow-lg transition-all"
               >
-                Publish
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Publishing...
+                  </div>
+                ) : (
+                  "Publish Post"
+                )}
               </Button>
             </div>
           </form>
