@@ -97,7 +97,7 @@ function CreatePostPage() {
 
   if (isSignedIn && user.publicMetadata.isAdmin) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black py-6 px-4 mt-15">
+      <div className="min-h-screen bg-white dark:bg-black py-6 px-4 mt-12">
         <div className="max-w-3xl mx-auto">
           {/* Header - More Compact */}
           <div className="text-center mb-6">
