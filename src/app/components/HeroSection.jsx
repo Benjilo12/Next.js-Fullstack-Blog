@@ -2,11 +2,13 @@ import { HyperText } from "@/components/ui/hyper-text";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { FlipWords } from "@/components/ui/flipwords";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
+import { FloatingPathsBackground } from "@/components/FloatingPathsBackground";
+import FluidParticlesBackground from "@/components/FluidParticlesBackground";
 
 export default function HeroSection() {
   return (
     <>
-      <div className="relative mx-auto flex min-h-full max-w-7xl mt-12 md:mt-17 flex-col overflow-hidden px-4 pt-16 sm:px-6 sm:pt-20 md:pt-24 lg:px-8 lg:pt-25 xl:pt-30">
+      <FluidParticlesBackground className="relative mx-auto flex min-h-[50vh] md:min-h-[70vh] max-w-screen mt-12 md:mt-17 flex-col overflow-hidden px-4 pt-16 sm:px-6 sm:pt-20 md:pt-24 lg:px-8 lg:pt-25 xl:pt-30">
         {/* Email badge - reduced width */}
         <div className="inline-flex items-center justify-center px-2 py-0.5 mb-2 md:mb-3 border border-blue-400/70 bg-white/20 backdrop-blur-sm rounded-full text-md text-white shadow-sm dark:bg-emerald-400/10 dark:border-emerald-400-30 mx-auto">
           <AnimatedGradientText
@@ -21,7 +23,7 @@ export default function HeroSection() {
 
         <div>
           {/* Main Heading - Responsive sizing and spacing */}
-          <div className="relative z-10 mx-auto mt-0 max-w-6xl text-center text-2xl font-semibold text-black sm:mt-6 sm:text-4xl md:text-4xl lg:text-6xl xl:text-7xl 2xl:text-8xl dark:text-white">
+          <div className="relative z-10 mx-auto mt-0 max-w-3xl md:max-w-6xl text-center text-2xl font-semibold text-black sm:mt-6 sm:text-4xl md:text-4xl lg:text-6xl xl:text-7xl 2xl:text-8xl dark:text-white">
             <AuroraText className="mb-2"> Blogging Without </AuroraText>
             <FlipWords
               words={["Boundaries•", "Limits•", "Rules•", "Borders•"]}
@@ -38,7 +40,7 @@ export default function HeroSection() {
             you&apos;re along for the journey.
           </HyperText>
         </div>
-      </div>
+      </FluidParticlesBackground>
     </>
   );
 }
