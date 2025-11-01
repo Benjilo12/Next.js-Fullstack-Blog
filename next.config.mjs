@@ -2,7 +2,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["ik.imagekit.io"],
     remotePatterns: [
       {
         protocol: "https",
@@ -10,6 +9,13 @@ const nextConfig = {
         port: "",
         pathname: "/benjiblog/**",
       },
+      // Add other image domains as needed using remotePatterns
+      // {
+      //   protocol: "https",
+      //   hostname: "example.com",
+      //   port: "",
+      //   pathname: "/**",
+      // },
     ],
   },
 };

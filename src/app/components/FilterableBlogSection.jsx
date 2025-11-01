@@ -25,6 +25,9 @@ export function FilterableBlogSection() {
 
   // Initialize category from URL params
   useEffect(() => {
+    // Only run if searchParams is available
+    if (!searchParams) return;
+
     const categoryFromUrl = searchParams.get("category");
     if (
       categoryFromUrl &&
@@ -74,7 +77,7 @@ export function FilterableBlogSection() {
     setSelectedCategory(category);
 
     // Update URL params without page reload
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || "");
     if (category === "all") {
       params.delete("category");
     } else {
