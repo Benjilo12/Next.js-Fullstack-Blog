@@ -54,7 +54,7 @@ export function Header() {
         className="
           fixed top-0 left-0 w-full z-50 outline-none
            backdrop-blur-lg dark:bg-black
-          shadow-sm transition-all duration-300 py-0
+           transition-all duration-300 py-0
         "
       >
         {/* Desktop Navigation */}

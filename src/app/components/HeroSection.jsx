@@ -33,7 +33,7 @@ export default function HeroSection() {
           </div>
 
           {/* Subtitle - Responsive sizing and spacing */}
-          <HyperText className="relative z-10 mx-auto mt-4 max-w-2xl text-center text-sm text-neutral-700 sm:mt-6 sm:text-base md:max-w-3xl md:text-lg lg:text-xl dark:text-neutral-400 mb-4">
+          <HyperText className="relative z-10 mx-auto mt-4 max-w-2xl text-center text-sm text-neutral-700 sm:mt-6 sm:text-base md:max-w-3xl md:text-lg lg:text-xl dark:text-neutral-400 mb-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-6 shadow-xl">
             This is my space to think out loud, share what matters to me, and
             write straight from the heart. Whether it&apos;s a fleeting thought
             or a deeper dive, my story unfolds right here. I&apos;m glad
