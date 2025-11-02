@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { light, dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 
 // Local avatar color generator
 const avatarColors = [
@@ -30,6 +31,7 @@ export default function CommentsSection({ postSlug }) {
   const [commentContent, setCommentContent] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const { user, isLoaded, isSignedIn } = useUser();
+  const { theme } = useTheme();
 
   // Fetch comments
   const fetchComments = async () => {
@@ -188,7 +190,7 @@ export default function CommentsSection({ postSlug }) {
                     )}
                   </div>
                 </div>
-                <time className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+                <time className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap shrink-0">
                   {new Date(comment.createdAt).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
@@ -260,7 +262,7 @@ export default function CommentsSection({ postSlug }) {
                 <SignInButton
                   mode="modal"
                   appearance={{
-                    baseTheme: [light, dark],
+                    baseTheme: theme === "dark" ? dark : light,
                   }}
                 >
                   <button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer">
