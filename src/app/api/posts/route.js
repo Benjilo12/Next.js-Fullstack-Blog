@@ -15,6 +15,7 @@ function generateSlug(title) {
     .trim();
 }
 
+// POST - Create new post (Admin only)
 export async function POST(request) {
   try {
     console.log("Starting post creation...");
@@ -133,23 +134,16 @@ export async function POST(request) {
   }
 }
 
-// Get all posts (latest first) - unchanged
-// app/api/posts/latest/route.js
-
-import { connect } from "@/lib/mongodb/mongoose";
-import Post from "@/lib/models/post.model";
-
-// app/api/posts/latest/route.js
-
+// GET - Get all posts (Public access)
 export async function GET(request) {
   try {
     await connect();
 
     const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get("limit")) || 10;
     const category = searchParams.get("category");
-    const limit = parseInt(searchParams.get("limit")) || 8;
 
-    // Build query - only published posts, no authentication required
+    // Build query
     let query = { published: true };
     if (category && category !== "all") {
       query.category = category;
@@ -165,14 +159,13 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       posts,
-      total: posts.length,
     });
   } catch (error) {
-    console.error("Error fetching latest posts:", error);
+    console.error("Error fetching posts:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to fetch posts",
+        error: "Internal server error",
       },
       { status: 500 }
     );
