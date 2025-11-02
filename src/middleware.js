@@ -1,26 +1,30 @@
-// middleware.js (or move to src/middleware.js if needed)
+// middleware.js
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard/(.*)",
-  "/api/posts/(.*)", // Protect POST, PUT, DELETE operations
+  "/admin(.*)", // Protect admin routes
 ]);
 
 const isPublicApiRoute = createRouteMatcher([
-  "/api/posts", // GET requests should be public
+  "/api/posts(.*)", // All posts API routes should be public for GET requests
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Protect the specified routes
+  // Protect the specified routes (dashboard, admin, etc.)
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
 
-  // For API posts route, only protect non-GET methods
+  // For API posts routes, only protect non-GET methods (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith("/api/posts")) {
-    if (req.method !== "GET") {
-      await auth.protect();
+    // Allow all GET requests without authentication
+    if (req.method === "GET") {
+      return; // No protection needed for GET requests
     }
+
+    // Protect all other methods (POST, PUT, DELETE, etc.)
+    await auth.protect();
   }
 });
 

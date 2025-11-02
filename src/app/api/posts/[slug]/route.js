@@ -5,23 +5,21 @@ import Post from "@/lib/models/post.model";
 import { currentUser } from "@clerk/nextjs/server";
 import { deleteFromImageKit } from "@/lib/imagekit";
 
-export async function GET(request, { params }) {
+// app/api/posts/route.js
+
+export async function GET() {
   try {
     await connect();
 
-    const { slug } = params;
-    const post = await Post.findOne({
-      slug,
-      published: true,
-    });
+    const posts = await Post.find({ published: true })
+      .sort({ publishedAt: -1 })
+      .select(
+        "title slug content author category tags featuredImage publishedAt updatedAt"
+      );
 
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ post });
+    return NextResponse.json({ posts });
   } catch (error) {
-    console.error("Error fetching post:", error);
+    console.error("Error fetching posts:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -39,7 +37,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug } = params;
+    const { slug } = await params;
 
     // Get post first to check for images
     const post = await Post.findOne({ slug });
@@ -78,7 +76,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug } = params;
+    const { slug } = await params;
     const formData = await request.formData();
 
     const title = formData.get("title");

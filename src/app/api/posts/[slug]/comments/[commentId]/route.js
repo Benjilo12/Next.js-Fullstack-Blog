@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { connect } from "@/lib/mongodb/mongoose";
 import Post from "@/lib/models/post.model";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 
 // Approve/Disapprove comment
 export async function PATCH(request, { params }) {
@@ -15,19 +15,17 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug, commentId } = params;
+    const { slug, commentId } = await params;
     const { isApproved } = await request.json();
-
-    if (typeof isApproved !== "boolean") {
-      return NextResponse.json(
-        { error: "isApproved must be a boolean" },
-        { status: 400 }
-      );
-    }
 
     const post = await Post.findOneAndUpdate(
       { slug, "comments._id": commentId },
-      { $set: { "comments.$.isApproved": isApproved } },
+      {
+        $set: {
+          "comments.$.isApproved": isApproved,
+          "comments.$.updatedAt": new Date(),
+        },
+      },
       { new: true }
     );
 
@@ -38,10 +36,11 @@ export async function PATCH(request, { params }) {
       );
     }
 
+    const updatedComment = post.comments.id(commentId);
+
     return NextResponse.json({
       success: true,
-      message: `Comment ${isApproved ? "approved" : "disapproved"}`,
-      comment: post.comments.id(commentId),
+      comment: updatedComment,
     });
   } catch (error) {
     console.error("Error updating comment:", error);
@@ -63,11 +62,15 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug, commentId } = params;
+    const { slug, commentId } = await params;
 
     const post = await Post.findOneAndUpdate(
       { slug },
-      { $pull: { comments: { _id: commentId } } },
+      {
+        $pull: {
+          comments: { _id: commentId },
+        },
+      },
       { new: true }
     );
 

@@ -9,13 +9,41 @@ const nextConfig = {
         port: "",
         pathname: "/benjiblog/**",
       },
-      // Add other image domains as needed using remotePatterns
-      // {
-      //   protocol: "https",
-      //   hostname: "example.com",
-      //   port: "",
-      //   pathname: "/**",
-      // },
+      // Clerk configurations - comprehensive coverage
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.clerk.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "*.clerk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.clerk.dev",
+      },
+      // Gravatar configurations
+      {
+        protocol: "https",
+        hostname: "www.gravatar.com",
+        port: "",
+        pathname: "/avatar/**",
+      },
+      {
+        protocol: "https",
+        hostname: "gravatar.com",
+        port: "",
+        pathname: "/avatar/**",
+      },
+      // Placeholder for fallback avatars
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
     ],
   },
 };

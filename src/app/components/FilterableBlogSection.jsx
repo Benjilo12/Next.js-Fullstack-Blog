@@ -23,12 +23,15 @@ export function FilterableBlogSection() {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
+  // Safe searchParams access
+  const getSearchParam = (key) => {
+    if (!searchParams) return null;
+    return searchParams.get(key);
+  };
+
   // Initialize category from URL params
   useEffect(() => {
-    // Only run if searchParams is available
-    if (!searchParams) return;
-
-    const categoryFromUrl = searchParams.get("category");
+    const categoryFromUrl = getSearchParam("category");
     if (
       categoryFromUrl &&
       CATEGORIES.some((cat) => cat.value === categoryFromUrl)
@@ -39,8 +42,12 @@ export function FilterableBlogSection() {
 
   // Fetch posts based on selected category
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchPosts() {
       try {
+        if (!isMounted) return;
+
         setLoading(true);
         setError(null);
 
@@ -52,40 +59,77 @@ export function FilterableBlogSection() {
         const response = await fetch(url);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch posts");
+          // Get more detailed error information
+          let errorMessage = "Failed to fetch posts";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
 
+        if (!isMounted) return;
+
         if (data.success) {
-          setPosts(data.posts);
+          setPosts(data.posts || []);
         } else {
           throw new Error(data.error || "Failed to fetch posts");
         }
       } catch (err) {
+        if (!isMounted) return;
         setError(err.message);
         console.error("Error fetching posts:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchPosts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [selectedCategory]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
 
-    // Update URL params without page reload
-    const params = new URLSearchParams(searchParams?.toString() || "");
-    if (category === "all") {
-      params.delete("category");
-    } else {
-      params.set("category", category);
-    }
+    // Safe URL update
+    try {
+      const params = new URLSearchParams(searchParams?.toString() || "");
+      if (category === "all") {
+        params.delete("category");
+      } else {
+        params.set("category", category);
+      }
 
-    router.push(`?${params.toString()}`, { scroll: false });
+      router.push(`?${params.toString()}`, { scroll: false });
+    } catch (err) {
+      console.error("Error updating URL:", err);
+      // Fallback: just update the state without URL change
+    }
   };
+
+  // Check if API route exists and handle gracefully
+  if (error && error.includes("404")) {
+    return (
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 max-w-md mx-auto">
+            <p className="text-yellow-800 dark:text-yellow-200 mb-4">
+              Blog features are currently being updated. Please check back soon!
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12 px-4 sm:px-6 lg:px-8">
@@ -136,11 +180,35 @@ export function FilterableBlogSection() {
         {error && !loading && (
           <div className="text-center py-12">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md mx-auto">
-              <p className="text-red-600 dark:text-red-400 mb-4">
-                Error: {error}
-              </p>
+              <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
               <button
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  setError(null);
+                  setLoading(true);
+                  // Retry the fetch
+                  const url =
+                    selectedCategory === "all"
+                      ? "/api/posts/latest?limit=8"
+                      : `/api/posts/latest?limit=8&category=${selectedCategory}`;
+
+                  fetch(url)
+                    .then((response) => {
+                      if (!response.ok) throw new Error("Failed to fetch");
+                      return response.json();
+                    })
+                    .then((data) => {
+                      if (data.success) {
+                        setPosts(data.posts || []);
+                        setError(null);
+                      }
+                    })
+                    .catch((err) => {
+                      setError(err.message);
+                    })
+                    .finally(() => {
+                      setLoading(false);
+                    });
+                }}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
                 Try Again

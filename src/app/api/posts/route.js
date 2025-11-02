@@ -134,41 +134,46 @@ export async function POST(request) {
 }
 
 // Get all posts (latest first) - unchanged
+// app/api/posts/latest/route.js
+
+import { connect } from "@/lib/mongodb/mongoose";
+import Post from "@/lib/models/post.model";
+
+// app/api/posts/latest/route.js
+
 export async function GET(request) {
   try {
     await connect();
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 10;
     const category = searchParams.get("category");
-    const published = searchParams.get("published") !== "false";
+    const limit = parseInt(searchParams.get("limit")) || 8;
 
-    const query = {};
-    if (category) query.category = category;
-    if (published) query.published = true;
+    // Build query - only published posts, no authentication required
+    let query = { published: true };
+    if (category && category !== "all") {
+      query.category = category;
+    }
 
     const posts = await Post.find(query)
-      .sort({ publishedAt: -1, createdAt: -1 })
+      .sort({ publishedAt: -1 })
       .limit(limit)
-      .skip((page - 1) * limit)
-      .select("-comments");
-
-    const total = await Post.countDocuments(query);
+      .select(
+        "title slug excerpt featuredImage category author publishedAt tags"
+      );
 
     return NextResponse.json({
+      success: true,
       posts,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      total: posts.length,
     });
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.error("Error fetching latest posts:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        success: false,
+        error: "Failed to fetch posts",
+      },
       { status: 500 }
     );
   }

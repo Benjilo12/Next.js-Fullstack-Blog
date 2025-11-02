@@ -2,26 +2,29 @@
 import { NextResponse } from "next/server";
 import { connect } from "@/lib/mongodb/mongoose";
 import Post from "@/lib/models/post.model";
+import { currentUser } from "@clerk/nextjs/server";
 
 // Add new comment
 export async function POST(request, { params }) {
   try {
     await connect();
 
-    const { slug } = params;
-    const { author, email, content } = await request.json();
-
-    // Validation
-    if (!author || !email || !content) {
+    // Check if user is signed in
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
+        { error: "Please sign in to comment" },
+        { status: 401 }
       );
     }
 
-    if (!email.match(/^\S+@\S+\.\S+$/)) {
+    const { slug } = await params;
+    const { content } = await request.json();
+
+    // Validation
+    if (!content) {
       return NextResponse.json(
-        { error: "Invalid email format" },
+        { error: "Comment content is required" },
         { status: 400 }
       );
     }
@@ -38,11 +41,12 @@ export async function POST(request, { params }) {
       {
         $push: {
           comments: {
-            author: author.trim(),
-            email: email.trim().toLowerCase(),
+            author: user.fullName || user.firstName || "Anonymous",
+            email: user.primaryEmailAddress?.emailAddress || "",
             content: content.trim(),
             createdAt: new Date(),
             isApproved: false, // Comments require admin approval
+            userId: user.id, // Store Clerk user ID for reference
           },
         },
       },
@@ -72,12 +76,12 @@ export async function POST(request, { params }) {
   }
 }
 
-// Get all approved comments for a post
+// Get all approved comments for a post (keep this public)
 export async function GET(request, { params }) {
   try {
     await connect();
 
-    const { slug } = params;
+    const { slug } = await params;
     const { searchParams } = new URL(request.url);
     const includeUnapproved = searchParams.get("admin") === "true";
 
