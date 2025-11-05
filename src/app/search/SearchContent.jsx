@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { PostCard } from "@/app/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,18 +14,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function SearchContent() {
+export default function SearchContent({ initialParams = {} }) {
   const [filters, setFilters] = useState({
-    searchTerm: "",
-    sort: "desc",
-    category: "all",
+    searchTerm: initialParams.searchTerm || "",
+    sort: initialParams.sort || "desc",
+    category: initialParams.category || "all",
   });
 
   const [allPosts, setAllPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   const categories = [
@@ -57,25 +56,14 @@ export default function SearchContent() {
     fetchAllPosts();
   }, []);
 
-  // Apply filters when URL params or filters change
+  // Apply filters when initialParams or allPosts change
   useEffect(() => {
-    const urlParams = new URLSearchParams(searchParams);
-    const searchTermFromUrl = urlParams.get("searchTerm") || "";
-    const sortFromUrl = urlParams.get("sort") || "desc";
-    const categoryFromUrl = urlParams.get("category") || "all";
-
-    setFilters({
-      searchTerm: searchTermFromUrl,
-      sort: sortFromUrl,
-      category: categoryFromUrl,
-    });
-
     // Filter posts based on criteria
     let results = [...allPosts];
 
     // Apply search term filter
-    if (searchTermFromUrl) {
-      const searchLower = searchTermFromUrl.toLowerCase();
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase();
       results = results.filter(
         (post) =>
           post.title?.toLowerCase().includes(searchLower) ||
@@ -87,20 +75,20 @@ export default function SearchContent() {
     }
 
     // Apply category filter
-    if (categoryFromUrl !== "all") {
-      results = results.filter((post) => post.category === categoryFromUrl);
+    if (filters.category !== "all") {
+      results = results.filter((post) => post.category === filters.category);
     }
 
     // Apply sorting
     results.sort((a, b) => {
       const dateA = new Date(a.publishedAt);
       const dateB = new Date(b.publishedAt);
-      return sortFromUrl === "asc" ? dateA - dateB : dateB - dateA;
+      return filters.sort === "asc" ? dateA - dateB : dateB - dateA;
     });
 
     setFilteredPosts(results.slice(0, 9));
     setShowMore(results.length > 9);
-  }, [searchParams, allPosts]);
+  }, [filters, allPosts]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -122,16 +110,12 @@ export default function SearchContent() {
 
   const handleShowMore = () => {
     const currentCount = filteredPosts.length;
-    const urlParams = new URLSearchParams(searchParams);
 
     // Re-filter to get all results and show more
     let results = [...allPosts];
-    const searchTerm = urlParams.get("searchTerm") || "";
-    const category = urlParams.get("category") || "all";
-    const sort = urlParams.get("sort") || "desc";
 
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase();
       results = results.filter(
         (post) =>
           post.title?.toLowerCase().includes(searchLower) ||
@@ -142,14 +126,14 @@ export default function SearchContent() {
       );
     }
 
-    if (category !== "all") {
-      results = results.filter((post) => post.category === category);
+    if (filters.category !== "all") {
+      results = results.filter((post) => post.category === filters.category);
     }
 
     results.sort((a, b) => {
       const dateA = new Date(a.publishedAt);
       const dateB = new Date(b.publishedAt);
-      return sort === "asc" ? dateA - dateB : dateB - dateA;
+      return filters.sort === "asc" ? dateA - dateB : dateB - dateA;
     });
 
     setFilteredPosts(results.slice(0, currentCount + 9));
