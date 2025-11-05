@@ -10,5 +10,3 @@ export default function SearchPage() {
     </Suspense>
   );
 }
-
-export const dynamic = "force-dynamic";
