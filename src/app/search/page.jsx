@@ -1,14 +1,13 @@
-// app/search/page.js
 import { Suspense } from "react";
-import SearchContent from "./SearchContent";
+import SearchResults from "./SearchResults";
 import { SearchSkeleton } from "./SearchSkeleton";
 
-export default function SearchPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SearchPage({ searchParams }) {
   return (
     <Suspense fallback={<SearchSkeleton />}>
-      <SearchContent />
+      <SearchResults searchParams={searchParams} />
     </Suspense>
   );
 }
-
-export const dynamic = "force-dynamic";

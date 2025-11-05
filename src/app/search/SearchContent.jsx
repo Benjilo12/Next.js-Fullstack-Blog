@@ -397,7 +397,7 @@ export default function SearchContent({ initialParams = {} }) {
                     <Button
                       onClick={handleShowMore}
                       variant="outline"
-                      className="px-8 py-3 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200"
+                      className="px-8 py-3 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 cursor-pointer"
                     >
                       Load More Posts
                     </Button>
