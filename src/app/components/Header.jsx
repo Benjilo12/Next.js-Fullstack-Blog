@@ -179,6 +179,7 @@ export function Header() {
                   appearance={{
                     baseTheme: [light, dark],
                   }}
+                  redirectUrl="/"
                 ></SignInButton>
               </SignedOut>
             </div>
