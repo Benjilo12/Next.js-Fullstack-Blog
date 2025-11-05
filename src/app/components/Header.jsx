@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { light, dark } from "@clerk/themes";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { ModeToggle } from "./ModeToggle";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
@@ -23,7 +24,29 @@ import Link from "next/link";
 export function Header() {
   const pathname = usePathname();
   const { theme } = useTheme();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize searchTerm from URL params directly
+  const urlParams = new URLSearchParams(searchParams?.toString() || "");
+  const initialSearchTerm =
+    urlParams.get("search") || urlParams.get("searchTerm") || "";
+
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      const newUrlParams = new URLSearchParams();
+      newUrlParams.set("searchTerm", searchTerm.trim());
+      const searchQuery = newUrlParams.toString();
+      router.push(`/search?${searchQuery}`);
+    }
+  };
+
+  // Remove the problematic useEffect - we initialize the state directly instead
+  // This avoids the synchronous setState call in useEffect
 
   const navItems = [
     { name: "Home", link: "/" },
@@ -39,7 +62,7 @@ export function Header() {
     "How to assemble your own PC?",
   ];
 
-  // Determine active link styling - Fixed hydration issue
+  // Determine active link styling
   const getLinkClasses = (link) => {
     const isActive = pathname === link || pathname === `${link}/`;
     if (isActive) {
@@ -78,7 +101,11 @@ export function Header() {
             <PlaceholdersAndVanishInput
               placeholders={placeholders}
               className="py-1 w-12"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onSubmit={handleSubmit}
             />
+
             <NavbarButton variant="secondary">
               <ModeToggle />
             </NavbarButton>
