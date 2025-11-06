@@ -1,140 +1,71 @@
-// app/api/posts/[slug]/route.js
+// app/api/posts/comments/route.js
 import { NextResponse } from "next/server";
 import { connect } from "@/lib/mongodb/mongoose";
 import Post from "@/lib/models/post.model";
 import { currentUser } from "@clerk/nextjs/server";
-import { deleteFromImageKit } from "@/lib/imagekit";
 
-// app/api/posts/route.js
-
-export async function GET() {
+// Get all comments from all posts (admin only)
+export async function GET(request) {
   try {
     await connect();
 
+    // Check if user is admin
+    const user = await currentUser();
+    if (!user || user.publicMetadata.isAdmin !== true) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const includeUnapproved = searchParams.get("admin") === "true";
+
+    // Get all published posts with their comments
     const posts = await Post.find({ published: true })
-      .sort({ publishedAt: -1 })
-      .select(
-        "title slug content author category tags featuredImage publishedAt updatedAt"
-      );
+      .select("title slug comments")
+      .lean();
 
-    return NextResponse.json({ posts });
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+    console.log(`Found ${posts.length} posts with comments`);
 
-export async function DELETE(request, { params }) {
-  try {
-    await connect();
+    // Flatten all comments and include post information
+    let allComments = [];
 
-    // Check if user is admin
-    const user = await currentUser();
-    if (!user || user.publicMetadata.isAdmin !== true) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    posts.forEach((post) => {
+      if (post.comments && post.comments.length > 0) {
+        console.log(
+          `Post "${post.title}" has ${post.comments.length} comments`
+        );
+        post.comments.forEach((comment) => {
+          // Convert comment to plain object and ensure _id is string
+          const commentObj = {
+            ...comment,
+            postTitle: post.title,
+            postSlug: post.slug,
+            _id: comment._id?.toString() || comment._id,
+          };
 
-    const { slug } = await params;
-
-    // Get post first to check for images
-    const post = await Post.findOne({ slug });
-
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
-
-    // Delete associated images from ImageKit
-    if (post?.featuredImage?.fileId) {
-      await deleteFromImageKit(post.featuredImage.fileId);
-    }
-
-    await Post.findOneAndDelete({ slug });
-
-    return NextResponse.json({
-      success: true,
-      message: "Post deleted successfully",
-    });
-  } catch (error) {
-    console.error("Error deleting post:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(request, { params }) {
-  try {
-    await connect();
-
-    // Check if user is admin
-    const user = await currentUser();
-    if (!user || user.publicMetadata.isAdmin !== true) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { slug } = await params;
-    const formData = await request.formData();
-
-    const title = formData.get("title");
-    const content = formData.get("content");
-    const category = formData.get("category");
-    const author = formData.get("author");
-    const featuredImage = formData.get("featuredImage");
-    const tags =
-      formData
-        .get("tags")
-        ?.split(",")
-        .map((tag) => tag.trim()) || [];
-    const published = formData.get("published") === "true";
-
-    // Get current post to handle image updates
-    const currentPost = await Post.findOne({ slug });
-    if (!currentPost) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
-
-    // Handle image upload/update
-    let featuredImageData = currentPost.featuredImage;
-    if (featuredImage && featuredImage.size > 0) {
-      // Delete old image if exists
-      if (currentPost.featuredImage?.fileId) {
-        await deleteFromImageKit(currentPost.featuredImage.fileId);
+          // If admin, include all comments, otherwise only approved ones
+          if (includeUnapproved || commentObj.isApproved) {
+            allComments.push(commentObj);
+          }
+        });
       }
-      // Upload new image
-      featuredImageData = await uploadToImageKit(featuredImage);
-    }
-
-    const updates = {
-      title,
-      content,
-      category,
-      author,
-      tags,
-      published,
-      featuredImage: featuredImageData,
-      updatedAt: new Date(),
-    };
-
-    // Update publishedAt if publishing for the first time
-    if (published && !currentPost.publishedAt) {
-      updates.publishedAt = new Date();
-    }
-
-    const updatedPost = await Post.findOneAndUpdate({ slug }, updates, {
-      new: true,
-      runValidators: true,
     });
+
+    console.log(`Total comments found: ${allComments.length}`);
+
+    // Sort by latest first
+    allComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const pendingCount = allComments.filter((c) => !c.isApproved).length;
+    const approvedCount = allComments.filter((c) => c.isApproved).length;
 
     return NextResponse.json({
-      success: true,
-      post: updatedPost,
+      comments: allComments,
+      total: allComments.length,
+      pending: pendingCount,
+      approved: approvedCount,
     });
   } catch (error) {
-    console.error("Error updating post:", error);
+    console.error("Error fetching all comments:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

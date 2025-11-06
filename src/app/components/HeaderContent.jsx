@@ -15,17 +15,25 @@ import {
 import { light, dark } from "@clerk/themes";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { ModeToggle } from "./ModeToggle";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import Link from "next/link";
+import { LogIn, UserCog } from "lucide-react"; // Import icons
 
 export function HeaderContent({ initialSearchParams = {} }) {
   const pathname = usePathname();
   const { theme } = useTheme();
   const router = useRouter();
+  const { user, isSignedIn } = useUser();
 
   // Initialize searchTerm from props
   const initialSearchTerm =
@@ -33,6 +41,9 @@ export function HeaderContent({ initialSearchParams = {} }) {
 
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Check if user is admin
+  const isAdmin = user?.publicMetadata?.isAdmin === true;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -106,8 +117,32 @@ export function HeaderContent({ initialSearchParams = {} }) {
               <ModeToggle />
             </NavbarButton>
 
-            {/* Fixed Clerk buttons with theme support */}
+            {/* Admin Login Icon - Only shows for non-signed in users */}
+            <SignedOut>
+              <NavbarButton
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push("/sign-in")}
+                className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Sign In"
+              >
+                <LogIn className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+              </NavbarButton>
+            </SignedOut>
+
+            {/* Admin Dashboard Icon - Shows when admin is signed in */}
             <SignedIn>
+              {isAdmin && (
+                <NavbarButton
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.push("/dashboard")}
+                  className="h-9 w-9 p-0 "
+                  title="Admin Dashboard"
+                >
+                  <UserCog className="h-8 w-8 " />
+                </NavbarButton>
+              )}
               <UserButton
                 appearance={{
                   baseTheme: theme === "dark" ? dark : light,
@@ -115,14 +150,6 @@ export function HeaderContent({ initialSearchParams = {} }) {
                 afterSignOutUrl="/"
               />
             </SignedIn>
-            <SignedOut>
-              <SignInButton
-                mode="modal"
-                appearance={{
-                  baseTheme: theme === "dark" ? dark : light,
-                }}
-              />
-            </SignedOut>
           </div>
         </NavBody>
 
@@ -157,6 +184,36 @@ export function HeaderContent({ initialSearchParams = {} }) {
 
             <div className="flex w-full flex-col gap-4 mt-4 pl-6.5">
               <ModeToggle className="" />
+
+              {/* Mobile Admin Login Icon */}
+              <SignedOut>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    router.push("/sign-in");
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Sign In</span>
+                </button>
+              </SignedOut>
+
+              {/* Mobile Admin Dashboard Icon */}
+              <SignedIn>
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      router.push("/dashboard");
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  >
+                    <UserCog className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </button>
+                )}
+              </SignedIn>
 
               {/* Mobile Clerk buttons */}
               <SignedIn className="w-full flex justify-center dark:bg-white text-black">

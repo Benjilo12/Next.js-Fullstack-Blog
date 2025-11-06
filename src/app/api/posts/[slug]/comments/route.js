@@ -76,39 +76,61 @@ export async function POST(request, { params }) {
   }
 }
 
-// Get all approved comments for a post (keep this public)
-export async function GET(request, { params }) {
+// Get all comments from all posts (admin only)
+export async function GET(request) {
   try {
     await connect();
 
-    const { slug } = await params;
+    // Check if user is admin
+    const user = await currentUser();
+    if (!user || user.publicMetadata.isAdmin !== true) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const includeUnapproved = searchParams.get("admin") === "true";
 
-    const post = await Post.findOne({ slug, published: true }, { comments: 1 });
+    // Get all published posts with their comments
+    const posts = await Post.find({ published: true })
+      .select("title slug comments")
+      .lean();
 
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
+    // Flatten all comments and include post information
+    let allComments = [];
 
-    let comments = post.comments;
+    posts.forEach((post) => {
+      if (post.comments && post.comments.length > 0) {
+        post.comments.forEach((comment) => {
+          // Convert comment to plain object and ensure _id is string
+          const commentObj = {
+            ...comment,
+            postTitle: post.title,
+            postSlug: post.slug,
+            _id: comment._id?.toString() || comment._id,
+          };
 
-    // If not admin, only return approved comments
-    if (!includeUnapproved) {
-      comments = comments.filter((comment) => comment.isApproved);
-    }
+          // If admin, include all comments, otherwise only approved ones
+          if (includeUnapproved || commentObj.isApproved) {
+            allComments.push(commentObj);
+          }
+        });
+      }
+    });
 
     // Sort by latest first
-    comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    allComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const pendingCount = allComments.filter((c) => !c.isApproved).length;
+    const approvedCount = allComments.filter((c) => c.isApproved).length;
 
     return NextResponse.json({
-      comments,
-      total: comments.length,
-      approved: comments.filter((c) => c.isApproved).length,
-      pending: comments.filter((c) => !c.isApproved).length,
+      comments: allComments,
+      total: allComments.length,
+      pending: pendingCount,
+      approved: approvedCount,
     });
   } catch (error) {
-    console.error("Error fetching comments:", error);
+    console.error("Error fetching all comments:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
