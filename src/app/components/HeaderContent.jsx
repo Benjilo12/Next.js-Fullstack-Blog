@@ -119,7 +119,12 @@ export function HeaderContent({ initialSearchParams = {} }) {
 
             {/* Sign In without button wrapper */}
             <SignedOut>
-              <SignInButton mode="modal">
+              <SignInButton
+                mode="modal"
+                appearance={{
+                  baseTheme: theme === "dark" ? dark : light,
+                }}
+              >
                 <span className="cursor-pointer text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                   Sign In
                 </span>

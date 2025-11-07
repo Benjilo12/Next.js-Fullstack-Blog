@@ -44,6 +44,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "via.placeholder.com",
       },
+      // Unsplash configurations for newsletter images
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 };

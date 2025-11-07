@@ -17,6 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bell, Loader2 } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
@@ -30,6 +32,7 @@ export default function DashCreate() {
   const [imagePreview, setImagePreview] = useState("");
   const [content, setContent] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,9 +57,14 @@ export default function DashCreate() {
         const result = await response.json();
         console.log("Post created successfully:", result);
 
-        // Redirect to the new post
-        router.push(`/`);
-        router.refresh();
+        // Show success notification
+        setShowNotification(true);
+
+        // Redirect to home page after a short delay to show notification
+        setTimeout(() => {
+          router.push("/");
+          router.refresh();
+        }, 2000);
       } else {
         const errorText = await response.text();
         console.log("Raw error response:", errorText);
@@ -85,6 +93,17 @@ export default function DashCreate() {
     }
   };
 
+  // Auto-hide notification after 5 seconds
+  useState(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showNotification]);
+
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
@@ -96,6 +115,55 @@ export default function DashCreate() {
   if (isSignedIn && user.publicMetadata.isAdmin) {
     return (
       <div className="min-h-screen bg-white dark:bg-black py-6 px-4">
+        {/* Notification */}
+        <AnimatePresence>
+          {showNotification && (
+            <motion.div
+              initial={{ opacity: 0, y: -50, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -50, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="fixed top-4 right-4 z-50 max-w-sm w-full"
+            >
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg shadow-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
+                      <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">
+                      Blog Post Published!
+                    </h4>
+                    <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                      Your post has been successfully published and is now live.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowNotification(false)}
+                    className="flex-shrink-0 text-green-400 hover:text-green-600 dark:hover:text-green-300 transition-colors"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="max-w-3xl mx-auto">
           {/* Header - More Compact */}
           <div className="text-center mb-6">
@@ -328,7 +396,7 @@ export default function DashCreate() {
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Publishing...
                   </div>
                 ) : (
