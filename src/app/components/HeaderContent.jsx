@@ -27,7 +27,7 @@ import { useTheme } from "next-themes";
 import { ModeToggle } from "./ModeToggle";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import Link from "next/link";
-import { LogIn, UserCog } from "lucide-react"; // Import icons
+import { UserCog } from "lucide-react";
 
 export function HeaderContent({ initialSearchParams = {} }) {
   const pathname = usePathname();
@@ -113,35 +113,29 @@ export function HeaderContent({ initialSearchParams = {} }) {
               onSubmit={handleSubmit}
             />
 
-            <NavbarButton variant="secondary">
-              <ModeToggle />
+            <NavbarButton variant="secondary" className="cursor-pointer ">
+              <ModeToggle className="cursor-pointer" />
             </NavbarButton>
 
-            {/* Admin Login Icon - Only shows for non-signed in users */}
+            {/* Sign In without button wrapper */}
             <SignedOut>
-              <NavbarButton
-                variant="ghost"
-                size="icon"
-                onClick={() => router.push("/sign-in")}
-                className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title="Sign In"
-              >
-                <LogIn className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
-              </NavbarButton>
+              <SignInButton mode="modal">
+                <span className="cursor-pointer text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Sign In
+                </span>
+              </SignInButton>
             </SignedOut>
 
-            {/* Admin Dashboard Icon - Shows when admin is signed in */}
+            {/* Admin Dashboard Icon with dark mode styling */}
             <SignedIn>
               {isAdmin && (
-                <NavbarButton
-                  variant="ghost"
-                  size="icon"
+                <button
                   onClick={() => router.push("/dashboard")}
-                  className="h-9 w-9 p-0 "
+                  className="h-9 w-9 p-0 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                   title="Admin Dashboard"
                 >
-                  <UserCog className="h-8 w-8 " />
-                </NavbarButton>
+                  <UserCog className="h-5 w-5 text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white" />
+                </button>
               )}
               <UserButton
                 appearance={{
@@ -185,21 +179,19 @@ export function HeaderContent({ initialSearchParams = {} }) {
             <div className="flex w-full flex-col gap-4 mt-4 pl-6.5">
               <ModeToggle className="" />
 
-              {/* Mobile Admin Login Icon */}
+              {/* Mobile Sign In without button wrapper */}
               <SignedOut>
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    router.push("/sign-in");
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span>Sign In</span>
-                </button>
+                <SignInButton mode="modal">
+                  <span
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    Sign In
+                  </span>
+                </SignInButton>
               </SignedOut>
 
-              {/* Mobile Admin Dashboard Icon */}
+              {/* Mobile Admin Dashboard Icon with dark mode styling */}
               <SignedIn>
                 {isAdmin && (
                   <button
@@ -207,7 +199,7 @@ export function HeaderContent({ initialSearchParams = {} }) {
                       setIsMobileMenuOpen(false);
                       router.push("/dashboard");
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     <UserCog className="h-4 w-4" />
                     <span>Dashboard</span>
@@ -226,15 +218,6 @@ export function HeaderContent({ initialSearchParams = {} }) {
                   />
                 </div>
               </SignedIn>
-              <SignedOut>
-                <SignInButton
-                  mode="modal"
-                  appearance={{
-                    baseTheme: [light, dark],
-                  }}
-                  redirectUrl="/"
-                ></SignInButton>
-              </SignedOut>
             </div>
           </MobileNavMenu>
         </MobileNav>
