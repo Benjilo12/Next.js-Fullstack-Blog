@@ -53,7 +53,7 @@ export default function AboutBlogSection() {
             <div className="flex flex-wrap gap-3 pt-2">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <span className="text-teal-600 dark:text-teal-400">📚</span>
-                <span>500+ Articles</span>
+                <span>100+ Articles</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <span className="text-teal-600 dark:text-teal-400">✍️</span>
