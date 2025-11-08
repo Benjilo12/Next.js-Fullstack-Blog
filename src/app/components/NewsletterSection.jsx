@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Loader2, Bell } from "lucide-react";
+import { Mail, Loader2, Bell, AlertCircle } from "lucide-react";
 import Image from "next/image";
 
 const containerVariants = {
@@ -38,10 +38,16 @@ const Newsletter = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("success"); // "success" or "error"
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Reset states
+    setError("");
+    setShowNotification(false);
+
+    // Validation
     if (!email) {
       setError("Please enter your email address");
       return;
@@ -53,15 +59,44 @@ const Newsletter = () => {
     }
 
     setIsLoading(true);
-    setError("");
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          preferences: {
+            categories: ["all"],
+            frequency: "weekly",
+          },
+          metadata: {
+            referrer: window.location.href,
+            subscribedAt: new Date().toISOString(),
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Subscription failed. Please try again.");
+      }
+
+      // Success
+      setNotificationType("success");
       setShowNotification(true);
       setEmail("");
-      console.log("Newsletter subscription:", email);
-    }, 1500);
+    } catch (error) {
+      // Error
+      setNotificationType("error");
+      setError(error.message);
+      setShowNotification(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Auto-hide notification after 5 seconds
@@ -75,6 +110,34 @@ const Newsletter = () => {
     }
   }, [showNotification]);
 
+  const getNotificationConfig = (type) => {
+    if (type === "error") {
+      return {
+        bgColor: "bg-red-50 dark:bg-red-900/20",
+        borderColor: "border-red-200 dark:border-red-800",
+        iconBg: "bg-red-100 dark:bg-red-800",
+        iconColor: "text-red-600 dark:text-red-400",
+        titleColor: "text-red-800 dark:text-red-200",
+        textColor: "text-red-700 dark:text-red-300",
+        title: "Subscription Failed",
+        message: error || "Something went wrong. Please try again.",
+      };
+    }
+
+    return {
+      bgColor: "bg-green-50 dark:bg-green-900/20",
+      borderColor: "border-green-200 dark:border-green-800",
+      iconBg: "bg-green-100 dark:bg-green-800",
+      iconColor: "text-green-600 dark:text-green-400",
+      titleColor: "text-green-800 dark:text-green-200",
+      textColor: "text-green-700 dark:text-green-300",
+      title: "Successfully Subscribed!",
+      message: "You'll receive our latest updates soon.",
+    };
+  };
+
+  const notificationConfig = getNotificationConfig(notificationType);
+
   return (
     <div className="relative font-sans w-full min-h-[400px] flex items-center justify-center overflow-hidden p-4 bg-white dark:bg-black transition-colors duration-300">
       {/* Notification */}
@@ -87,24 +150,42 @@ const Newsletter = () => {
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="fixed top-4 right-4 z-50 max-w-sm w-full"
           >
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg shadow-lg p-4">
+            <div
+              className={`${notificationConfig.bgColor} ${notificationConfig.borderColor} border rounded-lg shadow-lg p-4`}
+            >
               <div className="flex items-start gap-3">
                 <div className="shrink-0">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
-                    <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <div
+                    className={`w-8 h-8 ${notificationConfig.iconBg} rounded-full flex items-center justify-center`}
+                  >
+                    {notificationType === "error" ? (
+                      <AlertCircle
+                        className={`w-4 h-4 ${notificationConfig.iconColor}`}
+                      />
+                    ) : (
+                      <Bell
+                        className={`w-4 h-4 ${notificationConfig.iconColor}`}
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">
-                    Successfully Subscribed!
+                  <h4
+                    className={`text-sm font-semibold ${notificationConfig.titleColor}`}
+                  >
+                    {notificationConfig.title}
                   </h4>
-                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                    You&apos;ll receive our latest updates soon.
+                  <p className={`text-sm ${notificationConfig.textColor} mt-1`}>
+                    {notificationConfig.message}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowNotification(false)}
-                  className="shrink-0 text-green-400 hover:text-green-600 dark:hover:text-green-300 transition-colors"
+                  className={`shrink-0 ${
+                    notificationType === "error"
+                      ? "text-red-400 hover:text-red-600 dark:hover:text-red-300"
+                      : "text-green-400 hover:text-green-600 dark:hover:text-green-300"
+                  } transition-colors`}
                 >
                   <svg
                     className="w-4 h-4"
@@ -164,6 +245,7 @@ const Newsletter = () => {
               onChange={(e) => {
                 setEmail(e.target.value);
                 setError("");
+                setShowNotification(false);
               }}
               placeholder="Your Email Address"
               className="w-full sm:w-auto grow bg-transparent sm:pl-12 px-4 py-3 text-gray-700 dark:text-gray-200 placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none text-center sm:text-left rounded-lg"
@@ -176,7 +258,7 @@ const Newsletter = () => {
               disabled={isLoading}
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.98 }}
-              className="w-full sm:w-auto mt-2 sm:mt-0 px-6 py-3 bg-blue-600 dark:bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors duration-300 shadow-md flex items-center justify-center gap-2 min-w-[120px] cursor-pointer"
+              className="w-full sm:w-auto mt-2 sm:mt-0 px-6 py-3 bg-blue-600 dark:bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-300 shadow-md flex items-center justify-center gap-2 min-w-[120px] cursor-pointer disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -189,12 +271,13 @@ const Newsletter = () => {
             </motion.button>
           </div>
 
-          {error && (
+          {error && !showNotification && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-sm font-medium text-red-600 dark:text-red-400 mt-2"
+              className="text-sm font-medium text-red-600 dark:text-red-400 mt-2 flex items-center justify-center gap-2"
             >
+              <AlertCircle className="w-4 h-4" />
               {error}
             </motion.p>
           )}

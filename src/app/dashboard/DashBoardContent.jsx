@@ -9,7 +9,8 @@ import { Menu, X } from "lucide-react";
 import DashProfile from "../components/DashProfile";
 import DashPosts from "../components/DashPost";
 import DashCreate from "../components/DashCreate";
-import DashComments from "../components/DashComments"; // Add this import
+import DashComments from "../components/DashComments";
+import DashEmails from "../components/DashEmails"; // Add this import
 import DashboardComp from "../components/DashboardComp";
 
 export default function DashboardContent() {
@@ -95,7 +96,8 @@ export default function DashboardContent() {
             {tab === "profile" && <DashProfile />}
             {tab === "posts" && <DashPosts />}
             {tab === "create" && <DashCreate />}
-            {tab === "comments" && <DashComments />} {/* Add this line */}
+            {tab === "comments" && <DashComments />}
+            {tab === "emails" && <DashEmails />} {/* Add this line */}
             {(tab === "dash" || !tab) && user?.publicMetadata?.isAdmin && (
               <DashboardComp />
             )}

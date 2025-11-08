@@ -1,14 +1,13 @@
 // components/PostCard.jsx
 import Link from "next/link";
 import Image from "next/image";
-import GradientBorder from "@/components/GradientBorder";
 
 export function PostCard({ post }) {
   // Use post.slug for the link - pointing to /blog/[slug]
   const postSlug = post.slug;
 
   return (
-    <GradientBorder>
+    <section>
       <Link
         href={`/posts/${postSlug}`}
         className="group block bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700"
@@ -45,7 +44,6 @@ export function PostCard({ post }) {
             )}
           </div>
         )}
-
         {/* Content */}
         <div className="p-6">
           {/* Title */}
@@ -96,6 +94,6 @@ export function PostCard({ post }) {
           )}
         </div>
       </Link>
-    </GradientBorder>
+    </section>
   );
 }
