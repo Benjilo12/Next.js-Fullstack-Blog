@@ -1,6 +1,6 @@
 export default function SkeletonList() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen bg-white dark:bg-black mt-20">
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Skeleton */}
         <div className="text-center mb-12">

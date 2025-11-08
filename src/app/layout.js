@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 // Import from @clerk/nextjs instead of @clerk/themes
 import { light, dark } from "@clerk/themes";
 import localFont from "next/font/local";
+
 const Jakarta = localFont({
   src: "./fonts/Jakarta.woff2",
   variable: "--font-jakarta",

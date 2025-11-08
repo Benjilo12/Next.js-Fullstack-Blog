@@ -190,7 +190,7 @@ export default function BlogContent() {
                               {post.tags.slice(0, 2).map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"
+                                  className="text-xs bg-sky-500 text-fuchsia-800 dark:bg-emerald-400 dark:text-blue-800 px-2 py-1 rounded"
                                 >
                                   #{tag}
                                 </span>
@@ -244,7 +244,11 @@ export default function BlogContent() {
         {!hasMore && posts.length > 0 && (
           <div className="text-center mt-8">
             <p className="text-gray-500 dark:text-gray-400">
-              You&apos;ve reached the end! {posts.length} posts loaded.
+              You&apos;ve reached the end!{" "}
+              <span className="dark:text-cyan-700 font-bold text-sky-600">
+                {posts.length}
+              </span>{" "}
+              posts loaded.
             </p>
           </div>
         )}

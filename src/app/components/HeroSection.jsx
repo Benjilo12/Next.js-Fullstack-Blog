@@ -2,7 +2,7 @@ import { HyperText } from "@/components/ui/hyper-text";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { FlipWords } from "@/components/ui/flipwords";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
-import { FloatingPathsBackground } from "@/components/FloatingPathsBackground";
+
 import FluidParticlesBackground from "@/components/FluidParticlesBackground";
 
 export default function HeroSection() {

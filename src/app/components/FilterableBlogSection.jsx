@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PostCard } from "./PostCard";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 const CATEGORIES = [
   { value: "all", label: "All Posts", emoji: "📚" },
@@ -243,26 +244,13 @@ export function FilterableBlogSection() {
             </div>
 
             {/* View All Button */}
-            <div className="text-center mt-12">
-              <button
+            <div className="text-center mt-10">
+              <InteractiveHoverButton
                 onClick={() => router.push("/blog")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200 cursor-pointer"
+                className="inline-flex items-center gap-2 px-9 py-3  font-medium rounded-lg transition-colors duration-200 cursor-pointer"
               >
                 View All Posts
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
+              </InteractiveHoverButton>
             </div>
           </>
         )}

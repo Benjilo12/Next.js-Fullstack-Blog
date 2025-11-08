@@ -127,7 +127,7 @@ export default function DashCreate() {
             >
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg shadow-lg p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
                       <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
@@ -142,7 +142,7 @@ export default function DashCreate() {
                   </div>
                   <button
                     onClick={() => setShowNotification(false)}
-                    className="flex-shrink-0 text-green-400 hover:text-green-600 dark:hover:text-green-300 transition-colors"
+                    className="shrink-0 text-green-400 hover:text-green-600 dark:hover:text-green-300 transition-colors"
                   >
                     <svg
                       className="w-4 h-4"

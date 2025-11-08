@@ -102,7 +102,7 @@ export default async function PostPage({ params }) {
               {post.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm border border-gray-200 dark:border-gray-700"
+                  className=" bg-sky-500 text-fuchsia-800 dark:bg-emerald-400 dark:text-blue-800 px-3 py-1 rounded-full text-sm border border-gray-200 dark:border-gray-700"
                 >
                   #{tag}
                 </span>
@@ -112,7 +112,7 @@ export default async function PostPage({ params }) {
         )}
 
         {/* Post Content */}
-        <div
+        <article
           className="prose prose-lg max-w-none mb-12 
           prose-headings:text-gray-900 prose-headings:dark:text-white
           prose-p:text-gray-700 prose-p:dark:text-gray-300
@@ -134,7 +134,7 @@ export default async function PostPage({ params }) {
             dangerouslySetInnerHTML={{ __html: post.content }}
             className="leading-relaxed"
           />
-        </div>
+        </article>
 
         {/* Comments Section */}
         <CommentsSection postSlug={slug} />
