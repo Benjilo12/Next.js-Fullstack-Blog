@@ -7,6 +7,7 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 import React, { useRef, useState } from "react";
@@ -179,9 +180,12 @@ export const NavbarLogo = () => {
   return (
     <Link
       href="#"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
+      className="relative z-20 mr-2 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
     >
-      <span className="font-medium text-black dark:text-white">Startup</span>
+      <Image src="/Topz.png" alt="logo" height={35} width={45} />
+      {/* <h1 className=" text-cyan-600 md:text-1xl font-bold text-xl">
+        Top<span className="text-emerald-600">Blog</span>
+      </h1> */}
     </Link>
   );
 };

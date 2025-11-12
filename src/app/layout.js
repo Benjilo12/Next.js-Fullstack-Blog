@@ -13,9 +13,48 @@ const Jakarta = localFont({
   weights: ["100 900"],
 });
 
+const siteUrl = "https://www.eleventhfactor.com";
 export const metadata = {
-  title: "Cabin Booking Dashboard",
-  description: "Manage cabin reservations efficiently.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "TopBlog",
+    template: "%s | TopBlog",
+  },
+  description:
+    "TopBlog - Your go-to source for the latest articles, insights, and trends in technology, lifestyle, and more.",
+  keywords: ["blog", "articles", "technology", "lifestyle", "news", "Startups"],
+  robots: {
+    index: true, // ✅ IMPORTANT: Explicitly allow indexing
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "TopBlog",
+    title: "TopBlog",
+    description:
+      "TopBlog - Your go-to source for the latest articles, insights, and trends in technology, lifestyle, and more.",
+    images: [
+      {
+        url: "/Topz.png",
+        width: 1200,
+        height: 630,
+        alt: "TopBlog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TopBlog",
+    description:
+      "TopBlog - Your go-to source for the latest articles, insights, and trends in technology, lifestyle, and more.",
+    images: ["/Topz.png"],
+  },
 };
 
 export default function RootLayout({ children }) {

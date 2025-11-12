@@ -1,8 +1,8 @@
-// app/posts/[slug]/page.js
 import { notFound } from "next/navigation";
 import { connect } from "@/lib/mongodb/mongoose";
 import Post from "@/lib/models/post.model";
 import CommentsSection from "@/app/components/CommentsSection";
+import ShareButtons from "@/app/components/ShareButtons";
 import Image from "next/image";
 import Footer from "@/app/components/Footer";
 
@@ -15,22 +15,96 @@ export async function generateMetadata({ params }) {
   const post = await Post.findOne({
     slug,
     published: true,
-  }).select("title excerpt featuredImage");
+  }).select("title excerpt featuredImage category tags publishedAt author");
 
   if (!post) {
     return {
       title: "Post Not Found",
+      description: "The requested blog post could not be found.",
     };
   }
+
+  // Construct the full URL for this post
+  const postUrl = `${
+    process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com"
+  }/posts/${slug}`;
+
+  // Default image fallback
+  const defaultImage = {
+    url: "/opengraph-image.png",
+    width: 1200,
+    height: 630,
+    alt: `${post.title} - EleventhFactor Blog`,
+  };
+
+  // Use featured image if available, otherwise fallback
+  const ogImage = post.featuredImage?.url
+    ? {
+        url: post.featuredImage.url,
+        width: 1200,
+        height: 630,
+        alt: post.title,
+      }
+    : defaultImage;
+
+  // Format published date for article metadata
+  const publishedTime = post.publishedAt.toISOString();
 
   return {
     title: post.title,
     description: post.excerpt,
+    keywords: post.tags?.join(", ") || "",
+
+    // Open Graph for Facebook, LinkedIn, etc.
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: post.featuredImage?.url ? [post.featuredImage.url] : [],
+      url: postUrl,
+      siteName: "TopBlog",
+      images: [ogImage],
       type: "article",
+      locale: "en_US",
+      publishedTime: publishedTime,
+      authors: [post.author],
+      tags: post.tags || [],
+    },
+
+    // Twitter Card
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [ogImage.url],
+      creator: "@TopBlog", // Replace with your actual Twitter handle
+      site: "@TopBlog", // Replace with your actual Twitter handle
+    },
+
+    // Additional meta tags
+    alternates: {
+      canonical: postUrl,
+    },
+
+    // Article-specific meta
+    authors: [{ name: post.author }],
+    category: post.category,
+
+    // Robots meta
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+
+    // Verification for search consoles (optional)
+    verification: {
+      google: "your-google-verification-code", // Add your Google Search Console code
+      yandex: "your-yandex-verification-code", // Add if using Yandex
     },
   };
 }
@@ -50,8 +124,50 @@ export default async function PostPage({ params }) {
     notFound();
   }
 
+  // Construct the full URL for sharing
+  const postUrl = `${
+    process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com"
+  }/posts/${slug}`;
+
+  // Structured data for SEO (JSON-LD)
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    image: post.featuredImage?.url ? [post.featuredImage.url] : [],
+    datePublished: post.publishedAt.toISOString(),
+    dateModified: post.publishedAt.toISOString(), // Update if you have modified date
+    author: {
+      "@type": "Person",
+      name: post.author,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "TopBlog",
+      logo: {
+        "@type": "ImageObject",
+        url: `${
+          process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com"
+        }/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": postUrl,
+    },
+    keywords: post.tags?.join(", ") || "",
+    articleSection: post.category,
+  };
+
   return (
     <>
+      {/* Add structured data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
       <div className="min-h-screen py-8 transition-colors duration-200 mt-20">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Featured Image */}
@@ -61,7 +177,7 @@ export default async function PostPage({ params }) {
                 src={post.featuredImage.url}
                 alt={post.title}
                 width={1200}
-                height={1200}
+                height={630}
                 className="w-full h-64 sm:h-96 object-cover"
                 priority
               />
@@ -137,6 +253,9 @@ export default async function PostPage({ params }) {
               className="leading-relaxed"
             />
           </article>
+
+          {/* Share Section */}
+          <ShareButtons url={postUrl} title={post.title} />
 
           {/* Comments Section */}
           <CommentsSection postSlug={slug} />

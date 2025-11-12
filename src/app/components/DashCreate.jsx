@@ -360,7 +360,9 @@ export default function DashCreate() {
                       [{ header: [1, 2, 3, false] }],
                       ["bold", "italic", "underline"],
                       [{ list: "ordered" }, { list: "bullet" }],
-                      ["link", "image"],
+                      ["link", "image", "video", "youtube"],
+                      [{ color: [] }, { background: [] }],
+                      [{ indent: "-1" }, { indent: "+1" }],
                       ["clean"],
                     ],
                   }}

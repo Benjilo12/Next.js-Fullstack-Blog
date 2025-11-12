@@ -6,6 +6,58 @@ import {
 } from "@/components/ui/accordion";
 import Footer from "../components/Footer";
 
+// Define metadata
+export const metadata = {
+  title: "Frequently Asked Questions - TopBlog",
+  description:
+    "Find answers to common questions about using TopBlog. Learn how to create an account, write blog posts, customize your blog, and more.",
+  keywords: [
+    "FAQ",
+    "frequently asked questions",
+    "TopBlog help",
+    "blogging questions",
+    "account setup",
+    "blog customization",
+    "writing posts",
+    "following bloggers",
+    "password reset",
+  ],
+  openGraph: {
+    title: "Frequently Asked Questions - TopBlog",
+    description:
+      "Find answers to common questions about using TopBlog. Get help with account setup, writing posts, and blog customization.",
+    url: "/faq",
+    siteName: "TopBlog",
+    type: "website",
+    images: [
+      {
+        url: "/og-faq-image.png", // Create this image for better social sharing
+        width: 1200,
+        height: 630,
+        alt: "TopBlog FAQ - Frequently Asked Questions",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Frequently Asked Questions - TopBlog",
+    description:
+      "Find answers to common questions about using TopBlog. Get help with account setup and blog management.",
+    images: ["/Topz.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  alternates: {
+    canonical: "/faq",
+  },
+};
+
 const faqItems = [
   {
     question: "How do I create an account on TopBlog?",
@@ -39,9 +91,29 @@ const faqItems = [
   },
 ];
 
+// Structured data for FAQ schema
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item, index) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
 function FaqPage() {
   return (
     <>
+      {/* Add structured data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
       <div className="min-h-screen bg-white text-gray-800 dark:bg-black dark:text-gray-100 mt-16">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
           <div className="text-center mb-12">

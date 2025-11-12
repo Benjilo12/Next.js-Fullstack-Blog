@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const footer_data = [
@@ -37,10 +38,17 @@ function Footer() {
         <div>
           <Link
             href="/"
-            className="text-black text-2xl dark:text-gray-400 flex"
+            className="flex flex-row text-black text-2xl dark:text-gray-400 "
           >
-            <span className="text-emerald-600 text-[19px] mt-3 md:text-[27px] font-bold">
-              <span className="text-cyan-600">Top</span>Blog
+            <Image
+              src="/Topz.png"
+              alt="logo"
+              width={45}
+              height={35}
+              className="md:w-10 mr-1.5 md:h-10 md:mt-3 dark:bg-gray-900 w-9 h-9"
+            />
+            <span className=" text-emerald-600 text-[19px] mt-2 md:mt-4 md:text-[27px] font-bold">
+              <span className="text-cyan-600 ">Top</span>Blog
             </span>
           </Link>
           <p className=" text-gray-600 text-[14px] md:text-[15px] max-w-[410px] mt-3 dark:text-gray-400 leading-6">
