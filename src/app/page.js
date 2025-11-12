@@ -4,6 +4,7 @@ import HeroSection from "./components/HeroSection";
 import BlogSectionSkeleton from "./components/BlogSectionSkeleton";
 import NewsletterSection from "./components/NewsletterSection";
 import AboutBlogSection from "./components/AboutBlogSection";
+import Footer from "./components/Footer";
 
 function Home() {
   return (
@@ -14,6 +15,7 @@ function Home() {
       </Suspense>
       <AboutBlogSection />
       <NewsletterSection />
+      <Footer />
     </div>
   );
 }

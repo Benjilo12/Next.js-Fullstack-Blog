@@ -4,8 +4,10 @@ import BlogContent from "./BlogContent";
 
 export default function BlogPage() {
   return (
-    <Suspense fallback={<SkeletonList />}>
-      <BlogContent />
-    </Suspense>
+    <>
+      <Suspense fallback={<SkeletonList />}>
+        <BlogContent />
+      </Suspense>
+    </>
   );
 }
