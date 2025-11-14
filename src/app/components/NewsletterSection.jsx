@@ -258,7 +258,7 @@ const Newsletter = () => {
               disabled={isLoading}
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.98 }}
-              className="w-full sm:w-auto mt-2 sm:mt-0 px-6 py-3 bg-blue-600 dark:bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-300 shadow-md flex items-center justify-center gap-2 min-w-[120px] cursor-pointer disabled:cursor-not-allowed"
+              className="w-full sm:w-auto mt-2 sm:mt-0 px-6 py-3 bg-blue-600 dark:bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-300 shadow-md flex items-center justify-center gap-2 min-w-[120px] cursor-pointer "
             >
               {isLoading ? (
                 <>
@@ -293,21 +293,21 @@ const Newsletter = () => {
               width={32}
               height={32}
               className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800"
-              src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+              src="/ato.jpg"
               alt="User 1"
             />
             <Image
               width={32}
               height={32}
               className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800"
-              src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+              src="/dani.jpg"
               alt="User 2"
             />
             <Image
               width={32}
               height={32}
               className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800"
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
+              src="/feg.jpg"
               alt="User 3"
             />
           </div>

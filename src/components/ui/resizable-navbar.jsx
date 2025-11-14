@@ -182,7 +182,7 @@ export const NavbarLogo = () => {
       href="#"
       className="relative z-20 mr-2 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
     >
-      <Image src="/Topz.png" alt="logo" height={35} width={45} />
+      <Image src="/Topz.png" alt="logo" height={20} width={38} />
       {/* <h1 className=" text-cyan-600 md:text-1xl font-bold text-xl">
         Top<span className="text-emerald-600">Blog</span>
       </h1> */}

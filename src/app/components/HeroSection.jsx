@@ -23,7 +23,10 @@ export default function HeroSection() {
 
         <div>
           {/* Main Heading - Responsive sizing and spacing */}
-          <div className="relative z-10 mx-auto mt-0 max-w-3xl md:max-w-6xl text-center text-2xl font-semibold text-black sm:mt-6 sm:text-4xl md:text-4xl lg:text-6xl xl:text-7xl 2xl:text-8xl dark:text-white">
+          <div
+            data-aos="zoom-in-up"
+            className="relative z-10 mx-auto mt-0 max-w-3xl md:max-w-6xl text-center text-2xl font-semibold text-black sm:mt-6 sm:text-4xl md:text-4xl lg:text-6xl xl:text-7xl 2xl:text-8xl dark:text-white"
+          >
             <AuroraText className="mb-2"> Blogging Without </AuroraText>
             <FlipWords
               words={["Boundaries•", "Limits•", "Rules•", "Borders•"]}

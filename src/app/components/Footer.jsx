@@ -48,7 +48,7 @@ function Footer() {
               className="md:w-10 mr-1.5 md:h-10 md:mt-3 dark:bg-gray-900 w-9 h-9"
             />
             <span className=" text-emerald-600 text-[19px] mt-2 md:mt-4 md:text-[27px] font-bold">
-              <span className="text-cyan-600 ">Top</span>Blog
+              <span className="text-cyan-600 tracking-wider">Top</span>Blog
             </span>
           </Link>
           <p className=" text-gray-600 text-[14px] md:text-[15px] max-w-[410px] mt-3 dark:text-gray-400 leading-6">

@@ -93,7 +93,7 @@ export default function About() {
                 <div className="flex flex-wrap gap-4 pt-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-emerald-400">
-                      10K+
+                      2+
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Active Writers
@@ -101,7 +101,7 @@ export default function About() {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-emerald-400">
-                      50K+
+                      30+
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Blog Posts
@@ -109,7 +109,7 @@ export default function About() {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-emerald-400">
-                      1M+
+                      200+
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Monthly Readers
